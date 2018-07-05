@@ -2,11 +2,12 @@
 
 const express = require('express');
 const line = require('@line/bot-sdk');
+const axios = require('axios');
 const PORT = process.env.PORT || 3001;
 
 const config = {
-  channelAccessToken: "1Jm0jNA9ovgwCyD9MMEQT1P8R+nsaf+uzPiZKF0NcHbGlS6qOQWC7Xzszy4d1q2MpaDqoMoYKzJ4hSNk7V0qXxmxCQNpHqJ6Ouro+0hmJR4pvFp6fqnPEpIW4zfMclRFHeVK/WHE1bja+XVrxIq+RAdB04t89/1O/w1cDnyilFU=",
-  channelSecret: "fe5a2cbeb9c5cfa20434ff6691ddc642"
+  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
+  channelSecret: process.env.CHANNEL_SECRET
 };
 
 const app = express();
@@ -30,10 +31,14 @@ function handleEvent(event) {
 
   if (/おはよ/.test(sendMes)) {
     let date = getDate();
-
     repMes = `おはよう！\n` +
-      `今日は ${date} だよ！\n` +
-      `今日は何するの？`;
+      `今日は ${date} やで！\n` +
+      `今日は何するん？`;
+  } else if (/明日の天気/.test(sendMes)) {
+    repMes = '明日の天気はこんな感じみたいやで〜'
+    //getWeather(event.source.userId, 1)
+  } else {
+    repMes = sendMes;
   }
 
   return client.replyMessage(event.replyToken, {
@@ -43,6 +48,7 @@ function handleEvent(event) {
 }
 
 app.listen(PORT);
+console.log('-----nanase LINE bot start-----')
 console.log(`Server running at ${PORT}`);
 
 // 現在の日付取得
@@ -59,3 +65,21 @@ const getDate = () => {
 
   return formatDate;
 }
+/*
+// 天気取得
+const getWeather = async (userId, dayId) => {
+  const res = await axios.get('http://weather.livedoor.com/forecast/webservice/json/v1?city=017010');
+  const item = res.data;
+
+  // 日付と地域名と天気を取得
+  const city = item.location.city;
+  const dayLabel = item.forecasts[dayId].dateLabel;
+  const weather = item.forecasts[dayId].telop;
+  const date = item.forecasts[dayId].date;
+
+  await client.pushMessage(userId, {
+    type: 'text',
+    text: `${dayLabel}(${date})の${city}の天気は\n${weather}です。`
+  });
+}
+*/
