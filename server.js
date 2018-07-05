@@ -31,7 +31,7 @@ function handleEvent(event) {
 
   if (/おはよ/.test(sendMes)) {
     let date = getDate();
-    repMes = `おはよう！\n` +
+    repMes = `おはよ\u{1F493}\n` +
       `今日は ${date} だよ\n` +
       `今日も研究頑張ってな！`;
   } else if (/明日の天気/.test(sendMes)) {
