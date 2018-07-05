@@ -19,11 +19,10 @@ module.exports = function httpAdapter(config) {
     var data = config.data;
     var headers = config.headers;
     var timer;
-    var aborted = false;
 
     // Set User-Agent (required by some servers)
     // Only set header if it hasn't been set in config
-    // See https://github.com/mzabriskie/axios/issues/69
+    // See https://github.com/axios/axios/issues/69
     if (!headers['User-Agent'] && !headers['user-agent']) {
       headers['User-Agent'] = 'axios/' + pkg.version;
     }
@@ -83,7 +82,7 @@ module.exports = function httpAdapter(config) {
     };
 
     var proxy = config.proxy;
-    if (!proxy) {
+    if (!proxy && proxy !== false) {
       var proxyEnv = protocol.slice(0, -1) + '_proxy';
       var proxyUrl = process.env[proxyEnv] || process.env[proxyEnv.toUpperCase()];
       if (proxyUrl) {
@@ -118,7 +117,9 @@ module.exports = function httpAdapter(config) {
     }
 
     var transport;
-    if (config.maxRedirects === 0) {
+    if (config.transport) {
+      transport = config.transport;
+    } else if (config.maxRedirects === 0) {
       transport = isHttps ? https : http;
     } else {
       if (config.maxRedirects) {
@@ -129,7 +130,7 @@ module.exports = function httpAdapter(config) {
 
     // Create the request
     var req = transport.request(options, function handleResponse(res) {
-      if (aborted) return;
+      if (req.aborted) return;
 
       // Response has been received so kill timer that handles request timeout
       clearTimeout(timer);
@@ -177,7 +178,7 @@ module.exports = function httpAdapter(config) {
         });
 
         stream.on('error', function handleStreamError(err) {
-          if (aborted) return;
+          if (req.aborted) return;
           reject(enhanceError(err, config, null, lastRequest));
         });
 
@@ -195,7 +196,7 @@ module.exports = function httpAdapter(config) {
 
     // Handle errors
     req.on('error', function handleRequestError(err) {
-      if (aborted) return;
+      if (req.aborted) return;
       reject(enhanceError(err, config, null, req));
     });
 
@@ -204,20 +205,16 @@ module.exports = function httpAdapter(config) {
       timer = setTimeout(function handleRequestTimeout() {
         req.abort();
         reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED', req));
-        aborted = true;
       }, config.timeout);
     }
 
     if (config.cancelToken) {
       // Handle cancellation
       config.cancelToken.promise.then(function onCanceled(cancel) {
-        if (aborted) {
-          return;
-        }
+        if (req.aborted) return;
 
         req.abort();
         reject(cancel);
-        aborted = true;
       });
     }
 

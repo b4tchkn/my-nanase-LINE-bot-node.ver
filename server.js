@@ -32,11 +32,11 @@ function handleEvent(event) {
   if (/おはよ/.test(sendMes)) {
     let date = getDate();
     repMes = `おはよう！\n` +
-      `今日は ${date} やで！\n` +
-      `今日は何するん？`;
+      `今日は ${date} だよ\n` +
+      `今日も研究頑張ってな！`;
   } else if (/明日の天気/.test(sendMes)) {
     repMes = '明日の天気はこんな感じみたいやで〜'
-    //getWeather(event.source.userId, 1)
+    getWeather(event.source.userId, 1)
   } else {
     repMes = sendMes;
   }
@@ -71,6 +71,11 @@ const getWeather = async (userId, dayId) => {
   const res = await axios.get('http://weather.livedoor.com/forecast/webservice/json/v1?city=017010');
   const item = res.data;
 
+// 天気取得
+const getWeather = async (userId, dayId) => {
+  const res = await axios.get('http://weather.livedoor.com/forecast/webservice/json/v1?city=017010');
+  const item = res.data;
+
   // 日付と地域名と天気を取得
   const city = item.location.city;
   const dayLabel = item.forecasts[dayId].dateLabel;
@@ -79,7 +84,6 @@ const getWeather = async (userId, dayId) => {
 
   await client.pushMessage(userId, {
     type: 'text',
-    text: `${dayLabel}(${date})の${city}の天気は\n${weather}です。`
+    text: `${dayLabel}(${date})の${city}の天気は${weather}です。\nby livedoor天気情報`
   });
 }
-*/
