@@ -65,11 +65,6 @@ const getDate = () => {
 
   return formatDate;
 }
-/*
-// 天気取得
-const getWeather = async (userId, dayId) => {
-  const res = await axios.get('http://weather.livedoor.com/forecast/webservice/json/v1?city=017010');
-  const item = res.data;
 
 // 天気取得
 const getWeather = async (userId, dayId) => {
